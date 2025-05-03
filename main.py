@@ -8,12 +8,6 @@ from fastapi import FastAPI, Response, status, HTTPException
 app = FastAPI()
 
 
-
-
-
-app=FastAPI()
-
-
 my_posts = [{"name" :"karthikeyudu", "initial":"Galla", "age" : 27, "id": 1},
             {"name":"vinay", "initial":"konda", "age":26, "id":2}]
 
