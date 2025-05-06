@@ -61,12 +61,20 @@ def get_post(id: int):
     
     return {"post_detail": post}
 
+def find_index(id):
+    for p, index  in enumerate (my_posts):
+        if p['id'] == id:
+            return index
+    return None
+
+
 @app.delete("/delete/{id}")
 def delete_post(id: int):
-    for p in my_posts:
-        if p['id'] == id:
-            my_posts.remove(p)
-            return {"message": f"post with id {id} is deleted"}
+    index=find_index(id)
+    if index is None:
+        raise HTTPException(status_code=404, detail=f"your post with id {id} did not found")
+    my_posts.pop(index)
+    return {"message" : f"your post with id {id} is deleted"}
 
 
 
