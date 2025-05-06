@@ -62,7 +62,7 @@ def get_post(id: int):
     return {"post_detail": post}
 
 def find_index(id):
-    for p, index  in enumerate (my_posts):
+    for  index, p in enumerate (my_posts):
         if p['id'] == id:
             return index
     return None
