@@ -1,0 +1,2 @@
+1. 422 Unprocessable Entity
+this occurs when we are not passing json body in the request.
