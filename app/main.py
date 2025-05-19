@@ -62,7 +62,7 @@ class Post(BaseModel):
 
 @app.post("/createpost")
 def create_post(post: Post, db: Session = Depends(get_db)):
-      new_post=models.Post(name=post.name, age=post.age, gender=post.gender)
+      new_post=models.Post(**post.dict())
       db.add(new_post)
       db.commit()
       db.refresh(new_post)
@@ -89,12 +89,14 @@ def get_latest_post():
 
 
 @app.post("/post/{id}")
-def get_post(id: int):
-    cursor.execute("select * from posts where id=%s", (id,))
-    post=cursor.fetchone()
+def get_post(id: int, db: Session = Depends(get_db) ):
+   
+    post= db.query(models.Post).filter(models.Post.id == id).first()
+    # cursor.execute("select * from posts where id=%s", (id,))
+    # post=cursor.fetchone()
     if not post:
-        raise HTTPException(status_code=404, detail=f"your post with {id} is not found  ")
-    return {"post_detail": post}
+        raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
+    return {"data": post}
 
 def find_index(id):
     for  index, p in enumerate (my_posts):
@@ -104,10 +106,17 @@ def find_index(id):
 
 
 @app.delete("/delete/{id}")
-def delete_post(id: int):
-    cursor.execute("DELETE FROM posts WHERE id = %s RETURNING *", (id,))
-    deleted_post=cursor.fetchone()
-    connection.commit()
+def delete_post(id: int , db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
+    db.delete(post)
+    db.commit()
+
+
+    # cursor.execute("DELETE FROM posts WHERE id = %s RETURNING *", (id,))
+    # deleted_post=cursor.fetchone()
+    # connection.commit()
     return {"message" : f"your post with, {id}, is deleted"}
 
 
