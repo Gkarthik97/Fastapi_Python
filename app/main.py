@@ -1,12 +1,13 @@
 from fastapi.params import Body
 from pydantic import BaseModel, Field
 from random import randrange
+from typing import Optional, List
 from fastapi import status
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
-from . import models
+from . import models, schemas
 from sqlalchemy.orm import Session
 from .database import engine 
 models.Base.metadata.create_all(bind=engine)
@@ -36,32 +37,28 @@ except Exception as error:
     print("DataBase connection is unsuccessful")
     print("Error is", error)
 
-@app.get("/sqlalchemy")
+@app.get("/posts",response_model=List[schemas.responce])
 def get_post(db: Session = Depends(get_db)):
     post = db.query(models.Post).all()
-    return {"message": post}
+    return  post
 
 
 
-@app.post("/posts")
-def get_posts():
-    # cursor.execute("select * from posts")
-    # posts= cursor.fetchall()
-    return {"message":posts}
+# @app.post("/posts")
+# def get_posts():
+#     # cursor.execute("select * from posts")
+#     # posts= cursor.fetchall()
+#     return {"message":posts}
 
 
 
 
-class Post(BaseModel):
-    
-    name: str
-    gender : str
-    age : int
+
     
 
 
-@app.post("/createpost")
-def create_post(post: Post, db: Session = Depends(get_db)):
+@app.post("/createpost",response_model=schemas.responce)
+def create_post(post: schemas.Post, db: Session = Depends(get_db)):
       new_post=models.Post(**post.dict())
       db.add(new_post)
       db.commit()
@@ -71,7 +68,7 @@ def create_post(post: Post, db: Session = Depends(get_db)):
     # cursor.execute("insert into posts (title,content,posted_by) values (%s,%s,%s) RETURNING *", (post.title,post.content,post.posted_by))
     # connection.commit()
     # new_post=cursor.fetchone()
-      return {"data" : new_post}
+      return  new_post
 
 def find_post(id: int):
     for post in my_posts:
@@ -122,13 +119,24 @@ def delete_post(id: int , db: Session = Depends(get_db)):
 
 
 
-@app.put("/update_post/{id}")
+@app.put("/update/{id}")
 
-def update_post(id: int, post: Post):
-    cursor.execute("update posts  set posted_by = %s where id = %s RETURNING * ",(post.posted_by,id))
-    updated_post=cursor.fetchone() 
-    connection.commit() 
-    return {"message": f"your post with {id} is updated"}  
+def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db)):
+    query= db.query(models.Post).filter(models.Post.id == id)
+    if query == None:
+        raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
+    post=query.first()
+  
+    query.update(post_data.dict())
+    db.commit()
+    db.refresh(post)
+
+
+
+    # cursor.execute("update posts  set posted_by = %s where id = %s RETURNING * ",(post.posted_by,id))
+    # updated_post=cursor.fetchone() 
+    # connection.commit() 
+    return {"message": post}  
 
 
 
