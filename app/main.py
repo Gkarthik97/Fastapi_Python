@@ -138,6 +138,16 @@ def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db))
     # connection.commit() 
     return {"message": post}  
 
+@app.post("/user",status_code=status.HTTP_201_CREATED, response_model=schemas.userresponce)
+def create_user(User: schemas.user , db: Session = Depends(get_db)):
+    new_user=models.User(**User.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+    
+
 
 
 
