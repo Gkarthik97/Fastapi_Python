@@ -3,17 +3,17 @@ from pydantic import BaseModel, Field
 from random import randrange
 from typing import Optional, List
 from fastapi import status
+from passlib.context import CryptContext
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
-from . import models, schemas
+from . import models, schemas, utils
 from sqlalchemy.orm import Session
 from .database import engine 
 models.Base.metadata.create_all(bind=engine)
 
 from .database import get_db
-
 
 
 
@@ -140,11 +140,39 @@ def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db))
 
 @app.post("/user",status_code=status.HTTP_201_CREATED, response_model=schemas.userresponce)
 def create_user(User: schemas.user , db: Session = Depends(get_db)):
-    new_user=models.User(**User.dict())
-    db.add(new_user)
+   hashed_password= utils.passwd_hash(User.password)
+   User.password=hashed_password
+   new_user=models.User(**User.dict())
+   db.add(new_user)
+   db.commit()
+   db.refresh(new_user)
+   return new_user
+
+@app.get("/user/{id}", response_model=schemas.userresponce)
+def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f"your user with id  {id} is not found  ")
+    return user
+
+@app.post("/userupdate/{id}",response_model=schemas.userresponce)
+def upadte_user(id: int , User: schemas.userupdate , db: Session = Depends(get_db)):
+    query = db.query(models.User).filter(models.User.id == id)
+    if not query.first():
+        raise HTTPException(status_code=404, detail=f"your user with id  {id} is not found  ")
+    
+    query.update(User.dict(exclude_unset=True), synchronize_session=False)
+
     db.commit()
-    db.refresh(new_user)
-    return new_user
+    updated_user=query.first()
+    
+    
+    return updated_user
+
+    
+    
+
+   
 
     
 

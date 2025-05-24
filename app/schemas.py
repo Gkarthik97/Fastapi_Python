@@ -29,10 +29,12 @@ class user(BaseModel):
 
 class userresponce(BaseModel):
      email : EmailStr
-     password : str
      name : str
      initial : str
-     mobile_no : int = Field(..., ge=1000000000, le=9999999999)
-     gender : str
-     age : int = Field(..., ge=0, le=120)
+
+class userupdate(BaseModel):
+     name: str= None
+     email: str = None
+     age: int= None
+     
      
