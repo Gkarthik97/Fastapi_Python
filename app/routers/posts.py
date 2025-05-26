@@ -8,7 +8,10 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from typing import Optional, List
 
 
-router=APIRouter()
+router=APIRouter(
+    prefix="/posts",
+    tags=['posts']
+)
 
 try:
     connection=psycopg2.connect( host='localhost', database='Fastapi', user='postgres',password='postgres', cursor_factory=RealDictCursor)
@@ -18,7 +21,7 @@ except Exception as error:
     print("DataBase connection is unsuccessful")
     print("Error is", error)
 
-@router.get("/posts",response_model=List[schemas.responce])
+@router.get("/",response_model=List[schemas.responce])
 def get_post(db: Session = Depends(get_db)):
     post = db.query(models.Post).all()
     return  post
@@ -38,7 +41,7 @@ def get_post(db: Session = Depends(get_db)):
     
 
 
-@router.post("/createpost",response_model=schemas.responce)
+@router.post("/create",response_model=schemas.responce)
 def create_post(post: schemas.Post, db: Session = Depends(get_db)):
       new_post=models.Post(**post.dict())
       db.add(new_post)
@@ -66,7 +69,7 @@ def get_latest_post():
 
 
 
-@router.post("/post/{id}")
+@router.post("/{id}")
 def get_post(id: int, db: Session = Depends(get_db) ):
    
     post= db.query(models.Post).filter(models.Post.id == id).first()
@@ -83,7 +86,7 @@ def find_index(id):
     return None
 
 
-@router.delete("/delete/{id}")
+@router.delete("/{id}")
 def delete_post(id: int , db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
@@ -100,7 +103,7 @@ def delete_post(id: int , db: Session = Depends(get_db)):
 
 
 
-@router.put("/update/{id}")
+@router.put("/{id}")
 
 def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db)):
     query= db.query(models.Post).filter(models.Post.id == id)
