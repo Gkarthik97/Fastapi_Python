@@ -12,7 +12,7 @@ from . import models, schemas, utils
 from sqlalchemy.orm import Session
 from .database import engine 
 models.Base.metadata.create_all(bind=engine)
-from  .routers import posts, user
+from  .routers import posts, user, auth
 
 from .database import get_db
 
@@ -26,6 +26,7 @@ app = FastAPI()
 
 app.include_router(user.router)
 app.include_router(posts.router)
+app.include_router(auth.router)
 
 
 

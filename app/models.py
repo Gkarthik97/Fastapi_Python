@@ -19,12 +19,8 @@ class Post(Base):
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
-    initial=Column(String, nullable=False)
-    age = Column(Integer, nullable=False)
-    gender = Column(String, nullable=False)
     timestamp = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
-    mobile_no =Column(BigInteger, nullable=False)
+    
 

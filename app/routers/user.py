@@ -2,6 +2,7 @@ from .. import schemas, models, utils, database
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from app.database import engine, get_db
+from typing import Optional, List
 
 
 
@@ -10,7 +11,12 @@ router=APIRouter(
     tags=['Users']
 )
 
-@router.post("/",status_code=status.HTTP_201_CREATED, response_model=schemas.userresponce)
+@router.get("/",response_model=List[schemas.userresponce])
+def get_post(db: Session = Depends(get_db)):
+    users = db.query(models.User).all()
+    return  users
+
+@router.post("/create",status_code=status.HTTP_201_CREATED, response_model=schemas.userresponce)
 def create_user(User: schemas.user , db: Session = Depends(get_db)):
    hashed_password= utils.passwd_hash(User.password)
    User.password=hashed_password
