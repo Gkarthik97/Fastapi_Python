@@ -1,5 +1,6 @@
 
 from .. import models, schemas, database, utils
+from app.routers import Oauth2
 from  app.database import engine, get_db
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -42,7 +43,7 @@ def get_post(db: Session = Depends(get_db)):
 
 
 @router.post("/create",response_model=schemas.responce)
-def create_post(post: schemas.Post, db: Session = Depends(get_db)):
+def create_post(post: schemas.Post, db: Session = Depends(get_db), current_user: int = Depends(Oauth2.get_current_user)):
       new_post=models.Post(**post.dict())
       db.add(new_post)
       db.commit()
@@ -70,7 +71,7 @@ def get_latest_post():
 
 
 @router.post("/{id}")
-def get_post(id: int, db: Session = Depends(get_db) ):
+def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(Oauth2.get_current_user) ):
    
     post= db.query(models.Post).filter(models.Post.id == id).first()
     # cursor.execute("select * from posts where id=%s", (id,))
@@ -87,7 +88,7 @@ def find_index(id):
 
 
 @router.delete("/{id}")
-def delete_post(id: int , db: Session = Depends(get_db)):
+def delete_post(id: int , db: Session = Depends(get_db), current_user: int = Depends(Oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
@@ -105,7 +106,7 @@ def delete_post(id: int , db: Session = Depends(get_db)):
 
 @router.put("/{id}")
 
-def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db)):
+def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db), current_user: int = Depends(Oauth2.get_current_user)):
     query= db.query(models.Post).filter(models.Post.id == id)
     if query == None:
         raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")

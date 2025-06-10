@@ -1,5 +1,12 @@
 from jose import JWTError, jwt
 from datetime import *
+from app import schemas
+from fastapi.security import OAuth2PasswordBearer
+
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Form
+
+
+oauth_schema =OAuth2PasswordBearer('login')
 
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -9,7 +16,26 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 def create_token(data: dict):
     encoded_data =data.copy()
 
-    expiry_time = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expiry_time = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     encoded_data.update({"exp": expiry_time})
     jwt_token= jwt.encode(encoded_data,SECRET_KEY,ALGORITHM)
     return jwt_token
+
+def verify_jwt_token(token: dict, credentials_exception):
+    try:
+
+       payload= jwt.decode(token, ALGORITHM,SECRET_KEY)
+       id: str =payload.get("user_id")
+       if id is None:
+         raise credentials_exception
+       token_Data = schemas.TokenData(id=id)
+    except JWTError:
+       raise credentials_exception
+    
+def get_current_user(token: str = Depends(oauth_schema)):
+   credentials_exception=HTTPException(status_code=status.HTTP_401_UNAUTHRIZED,detail=f"your credentials are invalid",headers={"www_Authnticate":'Bearer'})
+   return verify_jwt_token(token,credentials_exception)
+
+    
+    
+

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr
 
 from datetime import datetime
+from typing import Optional
 
 
 
@@ -37,3 +38,5 @@ class UserLogin(BaseModel):
      email : EmailStr
      password: str     
      
+class TokenData(BaseModel):
+     TokenData: Optional[str] = None
