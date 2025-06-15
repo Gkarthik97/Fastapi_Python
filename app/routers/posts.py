@@ -25,8 +25,8 @@ except Exception as error:
     print("Error is", error)
 
 @router.get("/",response_model=List[schemas.responce])
-def get_post(db: Session = Depends(get_db)):
-    post = db.query(models.Post).all()
+def get_post(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
+    post = db.query(models.Post).filter(models.Post.owner_id ==current_user.id ).all()
     return  post
 
 
@@ -117,9 +117,10 @@ def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db),
     query= db.query(models.Post).filter(models.Post.id == id)
     if query == None:
         raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
+    
+    post=query.first()
     if post.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"you are not authorized to perform this action")
-    post=query.first()
   
     query.update(post_data.dict())
     db.commit()

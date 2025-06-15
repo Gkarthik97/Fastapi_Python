@@ -5,20 +5,29 @@ from typing import Optional
 
 
 
+class user(BaseModel):
+     email : EmailStr
+     password : str
+
+
+
 class Post(BaseModel):
     
     name: str
     content : str
+    owner : user
     
 
 class responce(BaseModel):
     name: str
     content : str
-    created_time : datetime
     owner_id : int
+    owner : user
 
 class Config:
         orm_mode = True
+
+
 
 class user(BaseModel):
      email : EmailStr
