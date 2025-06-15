@@ -7,6 +7,8 @@ from psycopg2.extras import RealDictCursor
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from typing import Optional, List
+from fastapi import status
+
 
 
 router=APIRouter(
@@ -44,7 +46,7 @@ def get_post(db: Session = Depends(get_db)):
 
 @router.post("/create",response_model=schemas.responce)
 def create_post(post: schemas.Post, db: Session = Depends(get_db), current_user: int = Depends(Oauth2.get_current_user)):
-      new_post=models.Post(**post.dict())
+      new_post=models.Post(owner_id=current_user.id,**post.dict())
       db.add(new_post)
       db.commit()
       db.refresh(new_post)
@@ -77,7 +79,10 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends
     # cursor.execute("select * from posts where id=%s", (id,))
     # post=cursor.fetchone()
     if not post:
-        raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
+        raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found")
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"you are not authorized to perform this action")
+
     return {"data": post}
 
 def find_index(id):
@@ -87,11 +92,13 @@ def find_index(id):
     return None
 
 
-@router.delete("/{id}")
+@router.delete("/delete/{id}")
 def delete_post(id: int , db: Session = Depends(get_db), current_user: int = Depends(Oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
-        raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
+        raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found ")
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"you are not authorized to perform this action")
     db.delete(post)
     db.commit()
 
@@ -104,12 +111,14 @@ def delete_post(id: int , db: Session = Depends(get_db), current_user: int = Dep
 
 
 
-@router.put("/{id}")
+@router.put("/update/{id}")
 
 def update_post(id: int, post_data: schemas.Post ,db: Session = Depends(get_db), current_user: int = Depends(Oauth2.get_current_user)):
     query= db.query(models.Post).filter(models.Post.id == id)
     if query == None:
         raise HTTPException(status_code=404, detail=f"your post with id  {id} is not found  ")
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"you are not authorized to perform this action")
     post=query.first()
   
     query.update(post_data.dict())

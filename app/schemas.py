@@ -8,13 +8,14 @@ from typing import Optional
 class Post(BaseModel):
     
     name: str
-    gender : str
-    age : int
+    content : str
+    
 
 class responce(BaseModel):
     name: str
-    gender: str
-    age : int
+    content : str
+    created_time : datetime
+    owner_id : int
 
 class Config:
         orm_mode = True
@@ -39,4 +40,5 @@ class UserLogin(BaseModel):
      password: str     
      
 class TokenData(BaseModel):
-     TokenData: Optional[str] = None
+     
+     id: Optional[int] = None
