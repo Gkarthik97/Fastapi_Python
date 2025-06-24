@@ -25,8 +25,8 @@ except Exception as error:
     print("Error is", error)
 
 @router.get("/",response_model=List[schemas.responce])
-def get_post(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user)):
-    post = db.query(models.Post).filter(models.Post.owner_id ==current_user.id ).all()
+def get_post(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user),limit: int=3, skip: int =0, Search: Optional[str]="" ):
+    post = db.query(models.Post).filter(models.Post.owner_id ==current_user.id ).filter(models.Post.name.contains(Search)).limit(limit).offset(skip).all()
     return  post
 
 

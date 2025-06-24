@@ -15,7 +15,7 @@ class Post(BaseModel):
     
     name: str
     content : str
-    owner : user
+    
     
 
 class responce(BaseModel):
