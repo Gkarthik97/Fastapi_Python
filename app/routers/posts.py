@@ -16,17 +16,11 @@ router=APIRouter(
     tags=['posts']
 )
 
-try:
-    connection=psycopg2.connect( host='localhost', database='Fastapi', user='postgres',password='postgres', cursor_factory=RealDictCursor)
-    cursor=connection.cursor()
-    print("DataBase Connection was successful")
-except Exception as error:
-    print("DataBase connection is unsuccessful")
-    print("Error is", error)
+
 
 @router.get("/",response_model=List[schemas.responce])
-def get_post(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user),limit: int=3, skip: int =0, Search: Optional[str]="" ):
-    post = db.query(models.Post).filter(models.Post.owner_id ==current_user.id ).filter(models.Post.name.contains(Search)).limit(limit).offset(skip).all()
+def get_post(db: Session = Depends(get_db),current_user: int = Depends(Oauth2.get_current_user),limit: int=3, skip: int =0, search: Optional[str]=" " ):
+    post = db.query(models.Post).filter(models.Post.owner_id ==current_user.id ).filter(models.Post.name.contains(search)).limit(limit).offset(skip).all()
     return  post
 
 

@@ -14,7 +14,7 @@ from .database import engine
 models.Base.metadata.create_all(bind=engine)
 from  .routers import posts, user, auth
 
-from .database import get_db
+
 
 
 
